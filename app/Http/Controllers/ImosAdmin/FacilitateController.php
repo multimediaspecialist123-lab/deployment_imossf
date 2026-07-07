@@ -38,25 +38,32 @@ public function index(Request $request)
     ];
 
     $users = $query->paginate(10)
-        ->through(function ($user) {
-            $userInfo = $user->userInformation;
+    ->through(function ($user) {
+        $userInfo = $user->userInformation;
+        $farmCompliance = $user->farmCompliance;
 
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'created_at' => optional($user->created_at)->format('M d, Y'),
-                'barangay' => optional(optional($userInfo)->barangay)->name ?? 'N/A',
-                'purok' => optional($userInfo)->purok ?? 'N/A',
-                'firstname' => optional($userInfo)->firstname ?? '',
-                'middlename' => optional($userInfo)->middlename ?? '',
-                'lastname' => optional($userInfo)->lastname ?? '',
-                'profile' => ($userInfo && $userInfo->profile_picture)
-                    ? asset('storage/' . $userInfo->profile_picture)
-                    : null,
-            ];
-        });
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'created_at' => optional($user->created_at)->format('M d, Y'),
+            'barangay' => optional(optional($userInfo)->barangay)->name ?? 'N/A',
+            'purok' => optional($userInfo)->purok ?? 'N/A',
+            'firstname' => optional($userInfo)->firstname ?? '',
+            'middlename' => optional($userInfo)->middlename ?? '',
+            'lastname' => optional($userInfo)->lastname ?? '',
+            'profile' => ($userInfo && $userInfo->profile_picture)
+                ? asset('storage/' . $userInfo->profile_picture)
+                : null,
+            'farm_compliance' => $farmCompliance ? [
+                'id' => $farmCompliance->id,
+                'status' => $farmCompliance->status,
+                'verified_at' => $farmCompliance->verified_at,
+                'registration_number' => $farmCompliance->registration_number,
+            ] : null,
+        ];
+    });
 
     return Inertia::render('admin/facilitate/users', [
         'users' => $users,

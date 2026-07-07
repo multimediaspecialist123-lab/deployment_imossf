@@ -31,7 +31,6 @@ import {
   Grid3x3,
   Plus,
   Layers,
-  DollarSign,
   TrendingDown,
   TrendingUp,
   PhilippinePeso
@@ -66,10 +65,12 @@ interface Props {
   selectedSwineIds?: number[];
     vetmedClearances?: VetmedClearance[]; // Add this
      latestClearanceId?: number | null; // Add this
+       priceControls?: Record<string, { price: number; unit: string; category: string }>; // Add this
+     
 }
 
 const CreateListing: React.FC<Props> = ({ availableSwine = [], selectedSwineIds = [],  vetmedClearances = [],
-  latestClearanceId = null // Add this parameter
+  latestClearanceId = null,  priceControls = {} // Add priceControls here with default empty object
  }) => {
   const [selectedCount, setSelectedCount] = useState(selectedSwineIds.length);
   const [activeTab, setActiveTab] = useState<'details' | 'swine'>('details');
@@ -416,8 +417,16 @@ const getPriceInputStyle = () => {
     });
   };
 
-
-
+ useEffect(() => {
+    if (data.category && priceControls[data.category]) {
+      const priceData = priceControls[data.category];
+      setData({
+        ...data,
+        price_per_unit: priceData.price.toString(),
+        price_unit_type: priceData.unit
+      });
+    }
+  }, [data.category, priceControls]); // Run when category changes or priceControls loads
 
   return (
     <AppLayout>
@@ -441,8 +450,8 @@ const getPriceInputStyle = () => {
           </h2>
 
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            You need to be a registered farmer to create marketplace listings.
-            Please complete your farmer information to continue.
+            You need to be a registered farmer in DA Livestock to create marketplace listings.
+            Please complete your farmer information to continue. Inquiry to DA Bunawan Office
           </p>
 
           <Link href="/user-informations/create">
@@ -605,8 +614,10 @@ const getPriceInputStyle = () => {
       {!data.vetmed_clearance_id && errors.vetmed_clearance_id && (
   <div className="text-xs text-red-600 mt-1">
     Please select a Vetmed Clearance
+
   </div>
 )}
+
     </label>
     <Input
       placeholder="e.g., Premium Fattening Pigs - Ready for Market"
@@ -636,28 +647,64 @@ const getPriceInputStyle = () => {
     
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
       {/* Category - Column 1 */}
-      <div className="space-y-2">
-        <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">
-          <Grid3x3 className="w-3.5 h-3.5" />
-          <span>Category</span>
-        </label>
-        <Select
-          value={data.category}
-          onValueChange={(value: string) => setData("category", value)}
-        >
-          <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 
-                                  dark:border-gray-700 focus:border-green-500
-                                  text-sm h-11 sm:h-12 w-full">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-gray-800 border-green-200 
-                                  dark:border-gray-700">
-            <SelectItem value="breeder" className="hover:bg-green-50 dark:hover:bg-gray-700 text-sm">Breeder</SelectItem>
-            <SelectItem value="piglet" className="hover:bg-green-50 dark:hover:bg-gray-700 text-sm">Piglet</SelectItem>
-            <SelectItem value="fattening" className="hover:bg-green-50 dark:hover:bg-gray-700 text-sm">Fattening</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Category - Column 1 with price display */}
+<div className="space-y-2">
+  <label className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+    <Grid3x3 className="w-3.5 h-3.5" />
+    <span>Category</span>
+  </label>
+  <Select
+    value={data.category}
+    onValueChange={(value: string) => setData("category", value)}
+  >
+    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 
+                            dark:border-gray-700 focus:border-green-500
+                            text-sm h-11 sm:h-12 w-full">
+      <SelectValue placeholder="Category" />
+    </SelectTrigger>
+    <SelectContent className="bg-white dark:bg-gray-800 border-green-200 
+                            dark:border-gray-700">
+      {/* <SelectItem value="breeder" className="hover:bg-green-50 dark:hover:bg-gray-700 text-sm">
+        <div className="flex justify-between items-center w-full">
+          <span>Breeder</span>
+          {priceControls['breeder'] && (
+            <span className="text-xs text-gray-500 ml-2">
+              ₱{priceControls['breeder'].price}/{priceControls['breeder'].unit === 'per_head' ? 'head' : 'kg'}
+            </span>
+          )}
+        </div>
+      </SelectItem> */}
+      <SelectItem value="piglet" className="hover:bg-green-50 dark:hover:bg-gray-700 text-sm">
+        <div className="flex justify-between items-center w-full">
+          <span>Piglet</span>
+          {priceControls['piglet'] && (
+            <span className="text-xs text-gray-500 ml-2">
+              ₱{priceControls['piglet'].price}/{priceControls['piglet'].unit === 'per_head' ? 'head' : 'kg'}
+            </span>
+          )}
+        </div>
+      </SelectItem>
+      <SelectItem value="fattening" className="hover:bg-green-50 dark:hover:bg-gray-700 text-sm">
+        <div className="flex justify-between items-center w-full">
+          <span>Fattening</span>
+          {priceControls['fattening'] && (
+            <span className="text-xs text-gray-500 ml-2">
+              ₱{priceControls['fattening'].price}/{priceControls['fattening'].unit === 'per_head' ? 'head' : 'kg'}
+            </span>
+          )}
+        </div>
+      </SelectItem>
+    </SelectContent>
+  </Select>
+  
+  {/* Show price info when category is selected */}
+  {data.category && priceControls[data.category] && (
+    <div className="mt-1 text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+     
+      <span>Assigned Price by DA: ₱{priceControls[data.category].price} per {priceControls[data.category].unit === 'per_head' ? 'head' : 'kg'}</span>
+    </div>
+  )}
+</div>
 
       {/* Price Input - Column 2 */}
       <div className="space-y-2">
@@ -672,6 +719,7 @@ const getPriceInputStyle = () => {
           </span>
           <Input
             type="number"
+            disabled
             placeholder="0.00"
             value={data.price_per_unit}
             onChange={(e) => setData("price_per_unit", e.target.value)}

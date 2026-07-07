@@ -76,7 +76,7 @@ class VetmedClearanceController extends Controller
             $clearance = VetmedClearance::create([
                 'user_id' => auth()->id(),
                 'clearance_number' => $validated['clearance_number'] ?? null,
-                'document_type' => $validated['document_type'],
+                'document_type' => $validated['document_type'] ?? 'Veterinary Clearance',
                 'veterinarian_name' => $validated['veterinarian_name'] ?? null,
                 'license_number' => $validated['license_number'] ?? null,
                 'issued_by' => $validated['issued_by'] ?? null,
@@ -132,7 +132,7 @@ class VetmedClearanceController extends Controller
     public function edit(VetmedClearance $vetmedClearance)
     {
         // Only allow editing if pending_review or needs_revision
-        if (!in_array($vetmedClearance->status, ['pending_review', 'needs_revision'])) {
+        if (!in_array($vetmedClearance->status, ['pending_review', 'needs_revision','verified'])) {
             return redirect()->route('vetmed.index')
                 ->with('error', 'Cannot edit verified or rejected clearance.');
         }
@@ -152,7 +152,7 @@ class VetmedClearanceController extends Controller
     public function update(Request $request, VetmedClearance $vetmedClearance)
     {
         // Only allow updating if pending_review or needs_revision
-        if (!in_array($vetmedClearance->status, ['pending_review', 'needs_revision'])) {
+        if (!in_array($vetmedClearance->status, ['pending_review', 'needs_revision','verified'])) {
             return back()->with('error', 'Cannot update verified or rejected clearance.');
         }
 

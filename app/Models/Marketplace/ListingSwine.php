@@ -179,7 +179,10 @@ public function getDaApprovalBadgeAttribute()
     };
 }
 
-
+public function swineRequest()
+{
+    return $this->hasOne(\App\Models\Marketplace\SwineRequest::class, 'listing_swine_id');
+}
 
 
 

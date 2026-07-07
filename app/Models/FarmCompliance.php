@@ -28,6 +28,13 @@ class FarmCompliance extends Model
         'remarks',
         'verified_by',
         'verified_at',
+
+         'has_barangay_clearance',      // Add this
+    'has_business_permit',          // Add this
+    'barangay_clearance_number',    // Optional
+    'business_permit_number',       // Optional
+    'barangay_clearance_date',      // Optional
+    'business_permit_date',         // Optional
     ];
 
     protected $casts = [
@@ -41,6 +48,11 @@ class FarmCompliance extends Model
         'date_registered' => 'date',
         'valid_until' => 'date',
         'verified_at' => 'datetime',
+        
+          'has_barangay_clearance' => 'boolean',
+    'has_business_permit' => 'boolean',
+    'barangay_clearance_date' => 'date',
+    'business_permit_date' => 'date',
     ];
 
     public function user(): BelongsTo

@@ -70,7 +70,7 @@ const getImageUrl = (path: string | null): string | null => {
 export default function EditVetmedClearance({ clearance }: Props) {
   const { data, setData, put, processing, errors } = useForm({
     clearance_number: clearance.clearance_number || '',
-    document_type: clearance.document_type,
+    document_type: clearance.document_type || 'Veterinary Clearance',
     veterinarian_name: clearance.veterinarian_name || '',
     license_number: clearance.license_number || '',
     issued_by: clearance.issued_by || '',
@@ -212,19 +212,14 @@ export default function EditVetmedClearance({ clearance }: Props) {
                 {/* Document Type */}
                 <div>
                   <Label htmlFor="document_type">Document Type *</Label>
-                  <select
-                    id="document_type"
-                    value={data.document_type}
-                    onChange={(e) => setData('document_type', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 
-                             bg-white dark:bg-gray-800 shadow-sm focus:border-green-500 
-                             focus:ring-green-500 sm:text-sm"
-                  >
-                    <option value="Veterinary Clearance">Veterinary Clearance</option>
-                    <option value="Health Certificate">Health Certificate</option>
-                    <option value="Vaccination Record">Vaccination Record</option>
-                    <option value="Other">Other</option>
-                  </select>
+                   <Input
+                    id="clearance_number"
+                    type="text"
+                    placeholder="e.g., VET-2024-00123"
+                    value={'Veterinary Clearance'}
+                    onChange={(e) => setData('clearance_number', e.target.value)}
+                  />
+                  
                   {errors.document_type && (
                     <p className="mt-1 text-sm text-red-600">{errors.document_type}</p>
                   )}
@@ -250,7 +245,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
                   <div>
                     <Label htmlFor="veterinarian_name">Veterinarian Name</Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <Input
                         id="veterinarian_name"
                         className="pl-10"
@@ -263,7 +258,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
                   <div>
                     <Label htmlFor="license_number">License Number</Label>
                     <div className="relative">
-                      <FileSignature className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <FileSignature className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <Input
                         id="license_number"
                         className="pl-10"
@@ -279,7 +274,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
                 <div>
                   <Label htmlFor="issued_by">Issued By (Clinic/Hospital)</Label>
                   <div className="relative">
-                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="issued_by"
                       className="pl-10"
@@ -295,7 +290,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
                   <div>
                     <Label htmlFor="issue_date">Issue Date</Label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <Input
                         id="issue_date"
                         type="date"
@@ -308,7 +303,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
                   <div>
                     <Label htmlFor="expiry_date">Expiry Date</Label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <Input
                         id="expiry_date"
                         type="date"
@@ -490,7 +485,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
               href={newFilePreview || existingFilePreview || ''}
               download={data.file?.name || clearance.file_name}
               onClick={(e) => e.stopPropagation()}
-              className="absolute top-4 left-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition z-10"
+              className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition z-10"
             >
               <Download className="w-6 h-6" />
             </a>
@@ -502,7 +497,7 @@ export default function EditVetmedClearance({ clearance }: Props) {
               onClick={(e) => e.stopPropagation()}
             />
             
-            <div className="absolute bottom-4 left-0 right-0 text-center text-white/60 text-sm">
+            <div className="absolute bottom-4 right-0 right-0 text-center text-white/60 text-sm">
               Click anywhere to close • {isReplacingFile ? data.file?.name : clearance.file_name}
             </div>
           </div>

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,6 +37,8 @@ import {
   Calendar,
   RefreshCw
 } from 'lucide-react';
+
+import AppLayout from "@/layouts/admin-layout";
 
 interface VetmedClearance {
   id: number;

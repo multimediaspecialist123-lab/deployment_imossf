@@ -191,14 +191,14 @@ export default function VetmedClearanceIndex({ clearances }: Props) {
                           View
                         </Button>
                         
-                        {(clearance.status === 'pending_review' || clearance.status === 'needs_revision') && (
+               
                           <Link href={`/vetmed-clearance/${clearance.id}/edit`}>
                             <Button variant="outline" size="sm">
                               <Edit className="w-4 h-4 mr-1" />
                               Edit
                             </Button>
                           </Link>
-                        )}
+                        
                         
                         <a
                           href={`/storage/${clearance.file_path}`}
@@ -212,7 +212,6 @@ export default function VetmedClearanceIndex({ clearances }: Props) {
                           </Button>
                         </a>
                         
-                        {(clearance.status === 'pending_review' || clearance.status === 'needs_revision') && (
                           <Button 
                             variant="outline" 
                             size="sm"
@@ -221,7 +220,7 @@ export default function VetmedClearanceIndex({ clearances }: Props) {
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
-                        )}
+                        
                       </div>
                     </div>
                   </CardContent>

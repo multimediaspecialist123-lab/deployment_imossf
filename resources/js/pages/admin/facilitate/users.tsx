@@ -25,11 +25,23 @@ import {
   ChevronFirst,
   ChevronLast,
   RefreshCw,
-  Mail as MailIcon
+  Mail as MailIcon,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ExternalLink
 } from "lucide-react";
 import AppLayout from "@/layouts/admin-layout";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
+
+interface FarmComplianceData {
+  id: number;
+  status: string;
+  verified_at: string | null;
+  registration_number: string;
+}
 
 interface UserType {
   id: number;
@@ -43,6 +55,7 @@ interface UserType {
   firstname: string;
   middlename: string;
   lastname: string;
+  farm_compliance?: FarmComplianceData | null;
 }
 
 interface Props {
@@ -77,7 +90,7 @@ interface Props {
 
 export default function UsersPage({ users, overallStats, flash }: Props) {
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("farmer");
   const [isLoading, setIsLoading] = useState(false);
   
   // Create refs for scrolling
@@ -103,7 +116,8 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
         u.lastname.toLowerCase().includes(searchLower) ||
         fullName.includes(searchLower) ||
         fullNameWithoutMiddle.includes(searchLower) ||
-        reverseName.includes(searchLower);
+        reverseName.includes(searchLower) ||
+        (u.farm_compliance?.registration_number?.toLowerCase().includes(searchLower) || false);
       
       const matchesRole = roleFilter === "all" || u.role === roleFilter;
       
@@ -202,6 +216,47 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
         {role}
       </Badge>
     );
+  };
+
+  const getComplianceStatusBadge = (status: string | undefined) => {
+    if (!status) {
+      return (
+        <Badge variant="outline" className="bg-gray-100 text-gray-600">
+          <Clock className="w-3 h-3 mr-1" />
+          No Application
+        </Badge>
+      );
+    }
+    
+    switch (status) {
+      case 'approved':
+        return (
+          <Badge className="bg-emerald-100 text-emerald-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Approved
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge className="bg-yellow-100 text-yellow-700">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge className="bg-rose-100 text-rose-700">
+            <XCircle className="w-3 h-3 mr-1" />
+            Rejected
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        );
+    }
   };
 
   const getUserInitials = (name: string) => {
@@ -396,7 +451,7 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                   <div className="relative">
                     <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
-                      placeholder="Search by name, email, barangay, firstname, middlename, lastname..."
+                      placeholder="Search by name, email, barangay, registration number..."
                       className="pl-10"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
@@ -404,7 +459,7 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                   </div>
                 </div>
 
-                <Select onValueChange={setRoleFilter} defaultValue="all">
+                <Select onValueChange={setRoleFilter} defaultValue="farmer">
                   <SelectTrigger>
                     <div className="flex items-center gap-2">
                       <Filter className="w-4 h-4" />
@@ -449,16 +504,17 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
             </div>
 
             {/* Users Table */}
-            <div ref={tableRef} className="rounded-lg border overflow-hidden">
+            <div ref={tableRef} className="rounded-lg border overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-800">
                     <TableHead className="w-16"></TableHead>
                     <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Registration Number</TableHead>
+                    <TableHead>Clearance Status</TableHead>
+                    <TableHead>Verified Date</TableHead>
                     <TableHead>Location</TableHead>
-                    <TableHead>Registered</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -498,20 +554,77 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                             <p className="text-xs text-gray-500 truncate max-w-[200px]">
                               ID: {user.id}
                             </p>
-                            {/* Show name components for debugging/verification */}
-                            <p className="text-xs text-gray-400 truncate max-w-[200px]">
-                              {user.firstname} {user.middlename} {user.lastname}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <MailIcon className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm dark:text-gray-300">{user.email}</span>
+                            {user.role === 'farmer' && (
+                              <p className="text-xs text-gray-400 truncate max-w-[200px]">
+                                {user.firstname} {user.lastname}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
                           {getRoleBadge(user.role)}
+                        </TableCell>
+                        <TableCell>
+                          
+                          <div className="flex-1">
+                          {user.role === 'farmer' && user.farm_compliance ? (
+                            <div className="flex items-center gap-2">
+                              
+                              <span className="text-sm font-mono dark:text-gray-300">
+                                {user.farm_compliance.registration_number || 'No Membership'}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">No Membership </span>
+                          )}
+
+     
+    </div>
+    <div className="flex-shrink-0">
+      {user.role === 'farmer' && user.farm_compliance && (
+        <Link
+          href={`/farm-compliance/${user.farm_compliance.id}`}
+          className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-md transition-colors group inline-flex"
+          title="View Farm Compliance Details"
+        >
+          <ExternalLink className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform" />
+        </Link>
+      )}
+    </div>
+                        </TableCell>
+                        <TableCell>
+  <div className="flex items-center justify-between gap-4">
+    <div className="flex-1">
+      {user.role === 'farmer' ? (
+        getComplianceStatusBadge(user.farm_compliance?.status)
+      ) : (
+        <span className="text-sm text-gray-400">—</span>
+      )}
+    </div>
+    <div className="flex-shrink-0">
+      {user.role === 'farmer' && user.farm_compliance && (
+        <Link
+          href={`/farm-compliance/${user.farm_compliance.id}`}
+          className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-md transition-colors group inline-flex"
+          title="View Farm Compliance Details"
+        >
+          <ExternalLink className="w-4 h-4 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform" />
+        </Link>
+      )}
+    </div>
+  </div>
+</TableCell>
+                        <TableCell>
+                          {user.role === 'farmer' && user.farm_compliance?.verified_at ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Calendar className="w-3 h-3 text-gray-400" />
+                              <span className="dark:text-gray-300">
+                                {formatDate(user.farm_compliance.verified_at)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">—</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
@@ -528,13 +641,10 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-sm">
-                            <Calendar className="w-3 h-3 text-gray-400" />
-                            <span className="dark:text-gray-300">{formatDate(user.created_at)}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
                           <div className="flex items-center justify-end gap-2">
+                        
+                            
+                            {/* View User Button */}
                             <Link
                               href={`/facilitate/users/${user.id}`}
                               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
@@ -542,6 +652,8 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                             >
                               <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                             </Link>
+                            
+                            {/* Edit User Button */}
                             <Link
                               href={`/facilitate/users/${user.id}/edit`}
                               className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors"
@@ -555,7 +667,7 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="py-12 text-center">
+                      <TableCell colSpan={8} className="py-12 text-center">
                         <div className="flex flex-col items-center justify-center gap-3">
                           <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-full">
                             <UserIcon className="w-8 h-8 text-gray-400" />
@@ -583,6 +695,7 @@ export default function UsersPage({ users, overallStats, flash }: Props) {
                           )}
                         </div>
                       </TableCell>
+                      
                     </TableRow>
                   )}
                 </TableBody>

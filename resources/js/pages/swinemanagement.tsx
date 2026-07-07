@@ -26,7 +26,9 @@ import {
     Clock,
     Filter,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    Siren,
+    File
 } from "lucide-react";
 import AppLayout from "@/layouts/app-layout";
 import { PigIcon } from '@/components/icons';
@@ -166,6 +168,13 @@ const SwineManagementDashboard = ({
             description: "Register new swine into your records.",
             icon: PlusCircle,
             link: "/swine-management/swine/multicreate",
+            color: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800"
+        },
+         { 
+            title: "VetMed Clearance", 
+            description: "Register new swine into your records.",
+            icon: File,
+            link: "/vetmed-clearance",
             color: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800"
         },
     ];

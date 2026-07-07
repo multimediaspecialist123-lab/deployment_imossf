@@ -144,5 +144,10 @@ public function getAgeInDaysAttribute()
         : null;
 }
 
+public function listingSwine()
+{
+    return $this->hasMany(\App\Models\Marketplace\ListingSwine::class, 'swine_id');
+}
+
     
 }

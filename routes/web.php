@@ -50,6 +50,7 @@ use App\Http\Controllers\ImosNotificationController;
 use App\Http\Controllers\LivestockLossNoticeController;
 use App\Http\Controllers\LivestockServiceController;
 use App\Http\Controllers\Marketplace\DirectSaleController;
+use App\Http\Controllers\PriceControlController;
 use App\Http\Controllers\ServiceBookingController;
 use App\Http\Controllers\ServiceRatingController;
 use App\Http\Controllers\VetmedClearanceController;
@@ -99,8 +100,24 @@ Route::prefix('farm-compliance')->group(function () {
 Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/farm-compliances', [FarmComplianceController::class, 'index'])->name('admin.farm-compliances.index');
     Route::get('/farm-compliances/{id}', [FarmComplianceController::class, 'show'])->name('admin.farm-compliances.show');
+       Route::get('/price-control', [PriceControlController::class, 'index'])->name('price-control.index');
+    Route::put('/price-control/{id}', [PriceControlController::class, 'update'])->name('price-control.update');
+    Route::post('/price-control/multiple', [PriceControlController::class, 'updateMultiple'])->name('price-control.update-multiple');
+    Route::post('/price-control', [PriceControlController::class, 'store'])->name('price-control.store');
+    Route::delete('/price-control/{id}', [PriceControlController::class, 'destroy'])->name('price-control.destroy');
+
+    });
+
+// Admin routes for price management
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+ });
+
 });
-});
+
+// routes/web.php
+
+
+
 
 
 

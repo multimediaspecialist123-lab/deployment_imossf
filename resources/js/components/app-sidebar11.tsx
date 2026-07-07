@@ -27,8 +27,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
-import { title } from "process"
-import { url } from "inspector"
+// import { title } from "process"
+// import { url } from "inspector"
 
 // Sample data
 const data = {
@@ -51,6 +51,15 @@ const data = {
         {
           title:"Swine Analytics",
           url: "/admin/swine-production",
+        },
+  
+        {
+          title:"VetMed Clearance",
+          url: "/admin/vetmed-clearances",
+        },
+         {
+          title:"Price Control",
+          url: "/admin/price-control/",
         },
 
      

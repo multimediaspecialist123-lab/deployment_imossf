@@ -16,6 +16,7 @@ use App\Models\Marketplace\MarketplaceTransaction;
 use App\Models\Marketplace\SwineRequest;
 use App\Models\SwineExpense;
 use App\Models\Marketplace\Notification;
+use App\Models\PriceControl;
 use App\Models\VetmedClearance;
 use Carbon\Carbon;
 
@@ -229,6 +230,7 @@ public function index(Request $request)
 
 // In your SellerListingController.php
 
+
 public function create(Request $request)
 {
     $user = $request->user();
@@ -250,11 +252,15 @@ public function create(Request $request)
     // Get the latest clearance ID (first item from ordered collection)
     $latestClearanceId = $vetmedClearances->isNotEmpty() ? $vetmedClearances->first()->id : null;
 
+    // Get price control data
+    $priceControls = PriceControl::getPriceOptions();
+
     return Inertia::render('marketplace/seller/create', [
         'availableSwine' => $availableSwine,
         'selectedSwineIds' => $request->query('swine_ids', []),
         'vetmedClearances' => $vetmedClearances,
-        'latestClearanceId' => $latestClearanceId, // Pass the latest ID
+        'latestClearanceId' => $latestClearanceId,
+        'priceControls' => $priceControls, // Add this
         'authUser' => [
             'id' => $user->id,
             'role' => $user->role,

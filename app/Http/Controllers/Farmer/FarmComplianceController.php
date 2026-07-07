@@ -91,86 +91,92 @@ class FarmComplianceController extends Controller
             ->with('success', 'Farm compliance application submitted successfully!');
     }
     
-    public function update(Request $request, int $id): RedirectResponse
-    {
-        try {
-            $compliance = FarmCompliance::findOrFail($id);
-            $user = Auth::user();
-            $isAdmin = $user->role === 'admin';
-            
-            Log::info('Farm Compliance Update Attempt', [
-                'compliance_id' => $id,
-                'user_id' => $user->id,
-                'user_role' => $user->role,
-                'isAdmin' => $isAdmin,
-                'request_data' => $request->all()
-            ]);
-            
-            if (!$isAdmin && $compliance->user_id !== $user->id) {
-                Log::warning('Unauthorized update attempt', ['user_id' => $user->id, 'compliance_user_id' => $compliance->user_id]);
-                abort(403, 'Unauthorized access');
-            }
-            
-            $rules = [];
-            
-            if ($isAdmin) {
-                // Admin can update all fields
-                $rules = [
-                    'registration_number' => 'nullable|string|unique:farm_compliances,registration_number,' . $id,
-                    'lgu_name' => 'nullable|string|max:255',
-                    'barangay_name' => 'nullable|string|max:255',
-                    'date_registered' => 'nullable|date',
-                    'valid_until' => 'nullable|date|after:date_registered',
-                    'has_septic_tank' => 'boolean',
-                    'has_drainage' => 'boolean',
-                    'proper_waste_disposal' => 'boolean',
-                    'distance_from_residence' => 'nullable|numeric|min:0',
-                    'meets_distance_requirement' => 'boolean',
-                    'has_proper_pen' => 'boolean',
-                    'has_biosecurity' => 'boolean',
-                    'remarks' => 'nullable|string',
-                    'status' => 'sometimes|in:pending,approved,rejected',
-                ];
-            } else {
-                // Farmers can only update compliance fields
-                $rules = [
-                    'has_septic_tank' => 'boolean',
-                    'has_drainage' => 'boolean',
-                    'proper_waste_disposal' => 'boolean',
-                    'distance_from_residence' => 'nullable|numeric|min:0',
-                    'meets_distance_requirement' => 'boolean',
-                    'has_proper_pen' => 'boolean',
-                    'has_biosecurity' => 'boolean',
-                ];
-            }
-            
-            $validated = $request->validate($rules);
-            
-            Log::info('Validation passed', ['validated_data' => $validated]);
-            
-            if ($isAdmin && isset($validated['status']) && $validated['status'] === 'approved' && $compliance->status !== 'approved') {
-                $validated['verified_by'] = $user->id;
-                $validated['verified_at'] = now();
-                Log::info('Setting verification info', ['verified_by' => $user->id]);
-            }
-            
-            $compliance->update($validated);
-            
-            Log::info('Farm Compliance updated successfully', ['id' => $compliance->id]);
-            
-            $message = $isAdmin ? 'Farm compliance record updated successfully!' : 'Your farm compliance record has been updated!';
-            
-            return redirect()->route('farm-compliance.show', $compliance->id)
-                ->with('success', $message);
-                
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation failed', ['errors' => $e->errors()]);
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            Log::error('Update failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return back()->with('error', 'Failed to update: ' . $e->getMessage())->withInput();
+ public function update(Request $request, int $id): RedirectResponse
+{
+    try {
+        $compliance = FarmCompliance::findOrFail($id);
+        $user = Auth::user();
+        $isAdmin = $user->role === 'admin';
+        
+        Log::info('Farm Compliance Update Attempt', [
+            'compliance_id' => $id,
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'isAdmin' => $isAdmin,
+            'request_data' => $request->all()
+        ]);
+        
+        if (!$isAdmin && $compliance->user_id !== $user->id) {
+            Log::warning('Unauthorized update attempt', ['user_id' => $user->id, 'compliance_user_id' => $compliance->user_id]);
+            abort(403, 'Unauthorized access');
         }
+        
+        $rules = [];
+        
+        if ($isAdmin) {
+            // Admin can update all fields including permits
+            $rules = [
+                'registration_number' => 'nullable|string|unique:farm_compliances,registration_number,' . $id,
+                'lgu_name' => 'nullable|string|max:255',
+                'barangay_name' => 'nullable|string|max:255',
+                'date_registered' => 'nullable|date',
+                'valid_until' => 'nullable|date|after:date_registered',
+                'has_septic_tank' => 'boolean',
+                'has_drainage' => 'boolean',
+                'proper_waste_disposal' => 'boolean',
+                'distance_from_residence' => 'nullable|numeric|min:0',
+                'meets_distance_requirement' => 'boolean',
+                'has_proper_pen' => 'boolean',
+                'has_biosecurity' => 'boolean',
+                'has_barangay_clearance' => 'boolean',           // Add this
+                'has_business_permit' => 'boolean',              // Add this
+                'barangay_clearance_number' => 'nullable|string|max:255',  // Add this
+                'business_permit_number' => 'nullable|string|max:255',     // Add this
+                'barangay_clearance_date' => 'nullable|date',    // Add this
+                'business_permit_date' => 'nullable|date',       // Add this
+                'remarks' => 'nullable|string',
+                'status' => 'sometimes|in:pending,approved,rejected',
+            ];
+        } else {
+            // Farmers can only update compliance fields (cannot update permits)
+            $rules = [
+                'has_septic_tank' => 'boolean',
+                'has_drainage' => 'boolean',
+                'proper_waste_disposal' => 'boolean',
+                'distance_from_residence' => 'nullable|numeric|min:0',
+                'meets_distance_requirement' => 'boolean',
+                'has_proper_pen' => 'boolean',
+                'has_biosecurity' => 'boolean',
+            ];
+        }
+        
+        $validated = $request->validate($rules);
+        
+        Log::info('Validation passed', ['validated_data' => $validated]);
+        
+        if ($isAdmin && isset($validated['status']) && $validated['status'] === 'approved' && $compliance->status !== 'approved') {
+            $validated['verified_by'] = $user->id;
+            $validated['verified_at'] = now();
+            Log::info('Setting verification info', ['verified_by' => $user->id]);
+        }
+        
+        $compliance->update($validated);
+        
+        Log::info('Farm Compliance updated successfully', ['id' => $compliance->id]);
+        
+        $message = $isAdmin ? 'Farm compliance record updated successfully!' : 'Your farm compliance record has been updated!';
+        
+        return redirect()->route('farm-compliance.show', $compliance->id)
+            ->with('success', $message);
+            
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('Validation failed', ['errors' => $e->errors()]);
+        return back()->withErrors($e->errors())->withInput();
+    } catch (\Exception $e) {
+        Log::error('Update failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        return back()->with('error', 'Failed to update: ' . $e->getMessage())->withInput();
     }
+}
     
     public function destroy(int $id): RedirectResponse
     {
